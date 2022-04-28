@@ -19,7 +19,7 @@ Various scripts I've made to automate things I do on the daily.
 ## Shell_bash scripts
 ### 7zallfiles.sh
 	- personalized script that just compresses every file inside a directory regardless of extension.
-
+	
 ### chtor.sh
 	- an attempt to change tor identity with cygwin. (Not working)
 
