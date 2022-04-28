@@ -54,3 +54,6 @@ Various scripts I've made to automate things I do on the daily.
 	- a test script. (not working)
 ### unzipall.sh
 	- a simple script that unzips all 7z and zip files in the directory.
+
+
+This is for personal use and if anyone decides to use it, please modify the script to your needs.
