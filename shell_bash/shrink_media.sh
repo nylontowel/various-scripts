@@ -14,9 +14,8 @@ IFS=$'\n,'
 
 # This script is intended for batch compressing images into webp
 # without losing File Modification and Creation tags.
-# Video compression was just an afterthought, and is does not work
-# as intended. Although it compresses fine, the date tags are not
-# present due to limitations of exiftool and ffmpeg.
+# Video compression has been fixed, but doesn't carry over a lot of
+# metadata except for date and time.
 
 # Comment this if you are using Linux. This is just a dirty way of fixing
 # a bug when using Windows Git Bash
@@ -51,17 +50,17 @@ lossyQuality=85
 losslessQuality=85
 
 imgLosslessArgs="-define webp:lossless=true"
-imgLossyArgs=""
+imgLossyArgs="-define webp:lossless=false"
 
 # FFMPEG config
 
 ffmpegThreads=1
-preInputFfmpeg="-hwaccel cuvid"
+preInputFfmpeg=""
 
 ## Video
 videoCodec="libx265"
 videoQuality="28"	# Uses -q:v if value is numbers
-					# Uses -b:v if value has letters (e.g. 100k,5M)
+			# Uses -b:v if value has letters (e.g. 100k,5M)
 
 ## Video Filters (Optional)
 vFil=""
@@ -69,7 +68,7 @@ vFil=""
 ## Audio
 audioCodec="libopus"
 audioQuality="96k"	# Uses -q:a if value is numbers
-					# Uses -b:a if value has letters (e.g. 100k,5M)
+			# Uses -b:a if value has letters (e.g. 100k,5M)
 
 ## Audio Filters (Optional)
 ## -af "$aFilters"
@@ -246,6 +245,10 @@ exif2File () {
 	exiftool -q -overwrite_original -FileCreateDate\<CreateDate -FileModifyDate\<ModifyDate ${1} &> /dev/null
 }
 
+oldExif2File () {
+	exiftool -tagsfromfile "${1}" -FileModifyDate\<ModifyDate -FileCreateDate\<CreateDate "${2}" &> /dev/null
+}
+
 magickLossy () {
 	varTwo="$(echo $2 | tr -d [:cntrl:])"
 	eval "magick \"$1\" $varTwo -quality $3 \"$4\" &> /dev/null && deleteOriginal \"$1\""
@@ -304,12 +307,13 @@ loop_files () {
                 newfile=${fname}.${vidOutExt}
                 carriagePrint "${count}/${total} videos processing: $file"
                 # ffmpeg -loglevel quiet -y -i "$file" $(echo "$ffmpegArgs" | tr -d [:print:] ) "$newfile"
-				ffmpegCommand "$file" "$ffmpegArgs" "$newfile"
-				errorCode=$?
+		ffmpegCommand "$file" "$ffmpegArgs" "$newfile"
+		errorCode=$?
                 if [ $errorCode -eq 0 ]; then
-					exif2File $newfile ## This doesn't work on MKV.
-                    carriagePrint "${count}/${total} videos processed: $file"
-                    deleteOriginal $file
+			# exif2File $newfile ## This doesn't work on MKV.
+			oldExif2File "$file" "$newfile"
+                	carriagePrint "${count}/${total} videos processed: $file"
+			deleteOriginal $file
                 else
                     carriagePrint "${count}/${total} videos error: $file"
                 fi
