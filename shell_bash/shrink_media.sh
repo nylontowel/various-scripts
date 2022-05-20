@@ -1,13 +1,13 @@
 #!/bin/bash -i
 
 if [ -z "$OIFS" ]; then
-	OIFS="$IFS"
+  OIFS="$IFS"
 fi
 
 path=$1
 
 if [ $path ]; then
-	pushd "$path"
+  pushd "$path"
 fi
 
 IFS=$'\n,'
@@ -59,16 +59,16 @@ preInputFfmpeg=""
 
 ## Video
 videoCodec="libx265"
-videoQuality="28"	# Uses -q:v if value is numbers
-			# Uses -b:v if value has letters (e.g. 100k,5M)
+videoQuality="28"  # Uses -q:v if value is numbers
+      # Uses -b:v if value has letters (e.g. 100k,5M)
 
 ## Video Filters (Optional)
 vFil=""
 
 ## Audio
 audioCodec="libopus"
-audioQuality="96k"	# Uses -q:a if value is numbers
-			# Uses -b:a if value has letters (e.g. 100k,5M)
+audioQuality="96k"  # Uses -q:a if value is numbers
+      # Uses -b:a if value has letters (e.g. 100k,5M)
 
 ## Audio Filters (Optional)
 ## -af "$aFilters"
@@ -113,27 +113,27 @@ else
 fi
 
 if [ -z ${vFil} ]; then
-	vFilter=""
+  vFilter=""
 else
-	vFilter="-vf $vFil"
+  vFilter="-vf $vFil"
 fi
 
 if [ -z ${aFil} ]; then
-	aFilter=""
+  aFilter=""
 else
-	aFilter="-af $aFil"
+  aFilter="-af $aFil"
 fi
 
 if [ -z ${fComplex} ]; then
-	filterComplex=""
+  filterComplex=""
 else
-	filterComplex="-filter_complex $fComplex"
+  filterComplex="-filter_complex $fComplex"
 fi
 
 imgTypes="${imgLossyTypes},${imgLosslessTypes}"
 
 if [ -z "$ffmpegArgs" ]; then
-	ffmpegArgs="-c:v $videoCodec $vidQ $vFilter -c:a $audioCodec $audQ $aFilter $filterComplex"
+  ffmpegArgs="-c:v $videoCodec $vidQ $vFilter -c:a $audioCodec $audQ $aFilter $filterComplex"
 fi
 preInputFfmpeg="$preInputFfmpeg $ffmpegThreads"
 
@@ -151,24 +151,24 @@ ffmpeg -hide_banner -version &> /dev/null && ffmpegPresent=1
 magick -version &> /dev/null && magickPresent=1
 
 depCheck () {
-	echo "Dependency $1 not present."
+  echo "Dependency $1 not present."
 }
 if [[ $exiftoolPresent -eq 0 ]]; then
-	depCheck exiftool
+  depCheck exiftool
 elif [[ $ffmpegPresent -eq 0 ]]; then
-	depCheck ffmpeg
+  depCheck ffmpeg
 elif [[ $magickPresent -eq 0 ]]; then
-	depCheck magick
+  depCheck magick
 else
-	echo "All is good. Proceeding..."
+  echo "All is good. Proceeding..."
 fi
 
 if [[ $exiftoolPresent -eq 0 ]]; then
-	exit
+  exit
 elif [[ $ffmpegPresent -eq 0 ]]; then
-	exit
+  exit
 elif [[ $magickPresent -eq 0 ]]; then
-	exit
+  exit
 fi
 
 # Functions
@@ -178,35 +178,35 @@ set_counter () {
 }
 
 resetCount () {
-	count=0
+  count=0
 }
 
 carriagePrint () {
-	cols=$(tput cols)
-	windowColumn=$(( $cols - 3 ))
-	outString="$1"
-	if (( $cols >= ${#outString} )); then
-		padding=$(( ( $cols ) - ( ${#outString} ) ))
-		dotString=$(printf "%${padding}s")
-		outString="${outString}${dotString// /' '}"
-	else
-		outString="${outString:0:$windowColumn}..."
-	fi
-	outputString="${outString:0:$cols}"
-	echo -ne $outputString\\r
+  cols=$(tput cols)
+  windowColumn=$(( $cols - 5 ))
+  outString="$1"
+  if (( $cols >= ${#outString} )); then
+    padding=$(( ( $cols ) - ( ${#outString} ) ))
+    dotString=$(printf "%${padding}s")
+    outString="${outString}${dotString// /' '}"
+  else
+    outString="${outString:0:$windowColumn}..."
+  fi
+  outputString="${outString:0:$cols}"
+  echo -ne $outputString\\r
 }
 
 deleteZeroByteFiles () {
-	if [ $delZeroByteFiles = 'true' ]; then
-		carriagePrint "Deleting zero-byte files... "
-		find . -type f -size 0 -iname "*.${1}" -exec rm {} \;
-	fi
+  if [ $delZeroByteFiles = 'true' ]; then
+    carriagePrint "Deleting zero-byte files... "
+    find . -type f -size 0 -iname "*.${1}" -exec rm {} \;
+  fi
 }
 
 deleteOriginal () {
-	if [ $deleteFiles = 'true' ]; then
-		rm $1
-	fi
+  if [ $deleteFiles = 'true' ]; then
+    rm $1
+  fi
 }
 
 count_files () {
@@ -218,50 +218,52 @@ count_files () {
 
 
 renameInvalidFiles () {
-	IFS=$'\n'
-	lastfile="none"
-	lastcount="none"
-	for file in $(find . -type f -iname "*.${1}" -printf "%P\n")
-	do
-		count=$((${count}+1))
-        fname=${file%.*}
-		mv "$file" "$(echo $file | tr -d ,)" &> /dev/null
-		if [ "$file" != "$(echo $file | tr -d ,)" ]; then
-			lastfile="$file"
-			lastcount="$count"
-			carriagePrint "Renamed $file"
-		else
-			carriagePrint "Checked ($count/$total). Last renamed ($lastcount): $lastfile"
-		fi
-	done
-	IFS=$'\n,'
+  IFS=$'\n'
+  lastfile="none"
+  lastcount="none"
+  for file in $(find . -type f -iname "*.${1}" -printf "%P\n")
+  do
+    count=$((${count}+1))
+    fname=${file%.*}
+    fext=${file##*.}
+    newfname=$(echo ${fname//[^[:ascii:]]/}.${fext} | tr -d ,)
+    mv "$file" "$newfname" &> /dev/null
+    if [ "$file" != "${newfname}" ]; then
+      lastfile=$newfname
+      lastcount=$count
+      carriagePrint "Renamed $file"
+    else
+      carriagePrint "Checked ($count/$total). Last renamed ($lastcount): $lastfile"
+    fi
+  done
+  IFS=$'\n,'
 }
 
 file2Exif () {
-	exiftool -q -overwrite_original -FileModifyDate\>ModifyDate -FileCreateDate\>CreateDate ${1} &> /dev/null
+  exiftool -q -overwrite_original -FileModifyDate\>ModifyDate -FileCreateDate\>CreateDate ${1} &> /dev/null
 }
 
 exif2File () {
-	exiftool -q -overwrite_original -FileCreateDate\<CreateDate -FileModifyDate\<ModifyDate ${1} &> /dev/null
+  exiftool -q -overwrite_original -FileCreateDate\<CreateDate -FileModifyDate\<ModifyDate ${1} &> /dev/null
 }
 
 oldExif2File () {
-	exiftool -tagsfromfile "${1}" -FileModifyDate\<ModifyDate -FileCreateDate\<CreateDate "${2}" &> /dev/null
+  exiftool -tagsfromfile "${1}" -FileModifyDate\<ModifyDate -FileCreateDate\<CreateDate "${2}" &> /dev/null
 }
 
 magickLossy () {
-	varTwo="$(echo $2 | tr -d [:cntrl:])"
-	eval "magick \"$1\" $varTwo -quality $3 \"$4\" &> /dev/null && deleteOriginal \"$1\""
+  varTwo="$(echo $2 | tr -d [:cntrl:])"
+  eval "magick \"$1\" $varTwo -quality $3 \"$4\" &> /dev/null"
 }
 
 magickLossless () {
-	varTwo="$(echo $2 | tr -d [:cntrl:])"
-	eval "magick \"$1\" $varTwo -quality $3 \"$4\" &> /dev/null && deleteOriginal \"$1\""
+  varTwo="$(echo $2 | tr -d [:cntrl:])"
+  eval "magick \"$1\" $varTwo -quality $3 \"$4\" &> /dev/null"
 }
 
 ffmpegCommand () {
-	varTwo="$(echo $2 | tr -d [:cntrl:])"
-	eval "ffmpeg -loglevel quiet -y -threads $preInputFfmpeg -i \"$1\" $varTwo \"$3\""
+  varTwo="$(echo $2 | tr -d [:cntrl:])"
+  eval "ffmpeg -loglevel quiet -y -threads $preInputFfmpeg -i \"$1\" $varTwo \"$3\""
 }
 
 loop_files () {
@@ -270,34 +272,37 @@ loop_files () {
         count=$((${count}+1))
         fname=${file%.*}
         if [ -z $(exiftool -DateTimeOriginal $file) ]; then
-			file2Exif $file
-            # exiftool -q -overwrite_original -FileModifyDate\>ModifyDate -FileCreateDate\>CreateDate $file &> /dev/null
+          file2Exif $file
+          # exiftool -q -overwrite_original -FileModifyDate\>ModifyDate -FileCreateDate\>CreateDate $file &> /dev/null
         fi
 
         for img in $imgTypes;
         do
             if [ ${1} = $img ]; then
-                newfile=${fname}.${imgOutExt}
                 for lossyType in $imgLossyTypes; do
                     if [ $lossyType = $img ]; then
+                        newfile="${fname}.${imgOutExt}"
                         # magick $file $(echo $imgLossyArgs | tr -d [:print:]) -quality $lossyQuality $newfile &> /dev/null && rm $file
-						magickLossy "$file"  "$imgLossyArgs" "$imgQuality" "$newfile"
-						errorCode=$?
+                        magickLossy "$file"  "$imgLossyArgs" "$imgQuality" "$newfile"
+                        errorCode=$?
                     fi
                 done
                 for losslessType in $imgLosslessTypes; do
                     if [ $losslessType = $img ]; then
-			    		# magick $file $(echo $imgLosslessArgs | tr -d [:print:]) -quality $losslessQuality $newfile &> /dev/null && rm $file
-						magickLossless "$file" "$imgLosslessArgs" "$imgQuality" "$newfile"
-						errorCode=$?
+                        newfile="${fname}.lossless.${imgOutExt}"
+                        # magick $file $(echo $imgLosslessArgs | tr -d [:print:]) -quality $losslessQuality $newfile &> /dev/null && rm $file
+                        magickLossless "$file" "$imgLosslessArgs" "$imgQuality" "$newfile"
+                        errorCode=$?
                     fi
                 done
-				if [ $errorCode -eq 0 ]; then
-					exif2File $newfile
-					carriagePrint "${count}/${total} images processed: $file"
-				else
-					carriagePrint "${count}/${total} images error: $file"
-				fi
+        if [ $errorCode -eq 0 ]; then
+          exif2File $newfile
+          oldExif2File "$file" "$newfile"
+          deleteOriginal "$file"
+          carriagePrint "${count}/${total} images processed: $file"
+        else
+          carriagePrint "${count}/${total} images error: $file"
+        fi
             fi
         done
 
@@ -307,13 +312,13 @@ loop_files () {
                 newfile=${fname}.${vidOutExt}
                 carriagePrint "${count}/${total} videos processing: $file"
                 # ffmpeg -loglevel quiet -y -i "$file" $(echo "$ffmpegArgs" | tr -d [:print:] ) "$newfile"
-		ffmpegCommand "$file" "$ffmpegArgs" "$newfile"
-		errorCode=$?
+                ffmpegCommand "$file" "$ffmpegArgs" "$newfile"
+                errorCode=$?
                 if [ $errorCode -eq 0 ]; then
-			# exif2File $newfile ## This doesn't work on MKV.
-			oldExif2File "$file" "$newfile"
-                	carriagePrint "${count}/${total} videos processed: $file"
-			deleteOriginal $file
+                    # exif2File $newfile ## This doesn't work on MKV.
+                    oldExif2File "$file" "$newfile"
+                    carriagePrint "${count}/${total} videos processed: $file"
+                    deleteOriginal $file
                 else
                     carriagePrint "${count}/${total} videos error: $file"
                 fi
@@ -330,42 +335,42 @@ set_counter
 # Images
 if [ $compressImages = 'true' ]; then
 
-	echo "Compressing Images..."
+  echo "Compressing Images..."
 
     set_counter
 
-	carriagePrint "Counting Files..."
+  carriagePrint "Counting Files..."
     for x in $imgTypes;
     do
         count_files "$x"
     done
 
-	echo -ne "Preparing files..." \\r
-	for x in $imgTypes;
+  echo -ne "Preparing files..." \\r
+  for x in $imgTypes;
     do
-		deleteZeroByteFiles $x
-		renameInvalidFiles "$x"
+    deleteZeroByteFiles $x
+    renameInvalidFiles "$x"
     done
 
-	carriagePrint "."
+  carriagePrint "."
     echo Total images to compress: $total
 
-	resetCount
+  resetCount
 
     for x in $imgTypes;
     do
         loop_files "$x"
     done
 
-	carriagePrint "."
+  carriagePrint "."
     echo Finished compressing $total images.
 else
-	echo Skipping images...
+  echo Skipping images...
 fi
 
 # Videos
 if [ $compressVideos = 'true' ]; then
-	echo "Compressing Videos..."
+  echo "Compressing Videos..."
     set_counter
 
     for x in $vidTypes;
@@ -373,31 +378,31 @@ if [ $compressVideos = 'true' ]; then
         count_files "$x"
     done
 
-	echo -ne "Preparing files..." \\r
-	for x in $vidTypes;
+  echo -ne "Preparing files..." \\r
+  for x in $vidTypes;
     do
-		deleteZeroByteFiles $x
-		renameInvalidFiles "$x"
+    deleteZeroByteFiles $x
+    renameInvalidFiles "$x"
     done
 
-	carriagePrint "."
+  carriagePrint "."
     echo Total videos to compress: $total
 
-	resetCount
+  resetCount
 
     for x in $vidTypes;
     do
         loop_files "$x"
     done
 
-	carriagePrint "."
+  carriagePrint "."
     echo Finished compressing $total videos.
 else
-	echo "Skipping Videos..."
+  echo "Skipping Videos..."
 fi
 
 if [ $path ]; then
-	popd
+  popd
 fi
 
 IFS=$OIFS

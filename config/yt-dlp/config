@@ -1,0 +1,5 @@
+-o "$HOME/Videos/%(extractor)s/%(uploader)s/%(title)s - (%(id)s).%(ext)s"
+--sponsorblock-mark all
+--embed-thumbnail
+--embed-metadata
+-f "((298/302/136/247/135/244/134/243/bv)+(251/ba))/best"
