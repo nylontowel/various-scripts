@@ -54,7 +54,7 @@ imgLossyArgs="-define webp:lossless=false"
 
 # FFMPEG config
 
-ffmpegThreads=1
+#ffmpegThreads=1
 preInputFfmpeg=""
 
 ## Video
@@ -64,6 +64,7 @@ videoQuality="28"  # Uses -q:v if value is numbers
 
 ## Video Filters (Optional)
 vFil=""
+vParams="-x265-params log-level=error"
 
 ## Audio
 audioCodec="libopus"
@@ -73,6 +74,7 @@ audioQuality="96k"  # Uses -q:a if value is numbers
 ## Audio Filters (Optional)
 ## -af "$aFilters"
 aFil=""
+aParams=""
 
 ## Filter_Complex (Optional)
 ## -filter_complex "$fComplex"
@@ -133,9 +135,8 @@ fi
 imgTypes="${imgLossyTypes},${imgLosslessTypes}"
 
 if [ -z "$ffmpegArgs" ]; then
-  ffmpegArgs="-c:v $videoCodec $vidQ $vFilter -c:a $audioCodec $audQ $aFilter $filterComplex"
+  ffmpegArgs="-c:v $videoCodec $vidQ $vFilter $vParams -c:a $audioCodec $audQ $aFilter $aParams $filterComplex"
 fi
-preInputFfmpeg="$preInputFfmpeg $ffmpegThreads"
 
 count=0
 total=0
@@ -248,7 +249,7 @@ exif2File () {
 }
 
 oldExif2File () {
-  exiftool -tagsfromfile "${1}" -FileModifyDate\<ModifyDate -FileCreateDate\<CreateDate "${2}" &> /dev/null
+  exiftool -q -tagsfromfile "${1}" -FileModifyDate\<ModifyDate -FileCreateDate\<CreateDate "${2}" &> /dev/null
 }
 
 magickLossy () {
@@ -262,8 +263,8 @@ magickLossless () {
 }
 
 ffmpegCommand () {
-  varTwo="$(echo $2 | tr -d [:cntrl:])"
-  eval "ffmpeg -loglevel quiet -y -threads $preInputFfmpeg -i \"$1\" $varTwo \"$3\""
+  args="$(echo $2 | tr -d [:cntrl:])"
+  eval "ffmpeg -hide_banner -loglevel warning -y -threads $(($(nproc)-1)) $preInputFfmpeg -i \"$1\" $args \"$3\""
 }
 
 loop_files () {

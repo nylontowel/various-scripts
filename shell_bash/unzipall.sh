@@ -3,7 +3,7 @@
 OIFS=$IFS
 IFS=$'\n'
 
-e7z="/r/7-Zip/7z.exe"
+e7z="7z"
 
 count=0
 total=0

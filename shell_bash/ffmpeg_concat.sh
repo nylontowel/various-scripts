@@ -1,9 +1,16 @@
 #!/bin/bash
 
-dirName=$(dirname '$0')
+if [[ -z $OIFS ]]; then
+	OIFS=$IFS
+	IFS=$'\n'
+fi
 
-for x in $(ls); do
-	echo "file '$x'" >> $dirname.txt
+
+dirName=$(basename '$0')
+filename=${1}
+
+for x in $@; do
+	echo file \'$x\' >> "${filename}.txt"
 done
 
-ffmpeg -f concat -i $dirname.txt -c copy $dirname.mp4 && rm $dirname.txt
+ffmpeg -safe 0 -f concat -i "${filename}.txt" -c copy "${filename}_concat.mp4" && rm ${filename}.txt

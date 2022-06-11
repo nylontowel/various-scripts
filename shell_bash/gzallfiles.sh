@@ -2,31 +2,27 @@
 OIFS=$IFS
 IFS=$'\n'
 
-e7z="7z"
+compress="gz"
+format="gz"
 
 count=0
 total=0
 
 for x in $(find . -maxdepth 1 -type f -printf "%P\n"); do
-	if [[ $x == *"7z" ]]; then
+	if [[ $x == *"$format" ]]; then
 		continue
 	fi 
 	total=$((total+1))
 done
 
 for file in $(find . -maxdepth 1 -type f -printf "%P\n"); do
-	if [[ $file == *"7z" ]]; then
+	if [[ $file == *"$format" ]]; then
 		continue
 	fi 
 	count=$(($count+1))
 	echo "$count/$total $file"
 	filename=${file%.*}
-	$e7z a -t7z -sdel -bso0 -bsp0 "${filename}.7z" "$file"
-	if [[ $? -ne 0 ]]; then
-		rm "${filename}.7z"
-		break
-	fi
-		
+	$compress "$file"
 done;
 
 IFS=$OIFS
