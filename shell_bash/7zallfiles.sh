@@ -45,7 +45,7 @@ for file in $(find . -maxdepth 1 -type f -printf "%P\n"); do
 	count=$(($count+1))
 	echo "$count/$total DicSize $hDicSize FileSize $(numfmt --to=iec $size) $file"
 	filename=${file%.*}
-	$e7z a -t7z -sdel -mx9 -mmt1 -md$hDicSize -bso0 -bsp0 "${filename}.7z" "$file"
+	$e7z a -t7z -sdel -mx9 -mmt4 -md$hDicSize -bso0 -bsp0 "${filename}.7z" "$file"
 	if [[ $? -ne 0 ]]; then
 		rm "${filename}.7z"
 		break

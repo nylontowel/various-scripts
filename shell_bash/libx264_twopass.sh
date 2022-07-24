@@ -9,8 +9,8 @@ bitrate=$(bc -l <<< "$vidsize*8/$vidtime")
 videobitrate=$(bc -l <<< "$bitrate*0.9")
 #audiobitrate=$(bc -l <<< "$bitrate*0.1")
 
-maxabitrate=$(numfmt --from=auto "192Ki")
-minabitrate=$(numfmt --from=auto "64Ki")
+maxabitrate=$(numfmt --from=auto "256Ki")
+minabitrate=$(numfmt --from=auto "128Ki")
 if [[ ${audiobitrate%.*} -ge $maxabitrate ]]; then
 	audiobitrate=$maxabitrate
 	videobitrate=$(bc -l <<< "$bitrate-$maxabitrate")
@@ -26,4 +26,4 @@ echo Audio Bitrate: $(numfmt --to=iec "$audiobitrate")
 echo Estimated Output File Size: $(numfmt --to=iec-i "$(bc -l <<< "$bitrate/8*$vidtime")")
 
 ffmpeg -y -v quiet -stats -hide_banner -i "$file" -c:v libx264 -b:v "$videobitrate" -an -pass 1 -f null /dev/null
-ffmpeg -y -v quiet -stats -hide_banner -i "$file" -c:v libx264 -b:v "$videobitrate" -pass 2 -c:a aac -b:a "$audiobitrate" -vbr off "${file%.*}_twopass.mp4"
+ffmpeg -y -v quiet -stats -hide_banner -i "$file" -c:v libx264 -b:v "$videobitrate" -pass 2 -c:a aac -b:a "$audiobitrate" "${file%.*}_twopass.mp4"

@@ -23,7 +23,7 @@ IFS=$'\n,'
 
 # Options on what media to process.
 compressImages=true
-compressVideos=true # This doesn't work as intended. Modification date does not work.
+compressVideos=false # This doesn't work as intended. Modification date does not work.
 
 # If zero byte files are to be deleted. Disabling will cause
 # visual issues but harmless. Disable if you have zero byte files that
