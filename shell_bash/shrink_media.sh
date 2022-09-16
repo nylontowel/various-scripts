@@ -23,7 +23,7 @@ IFS=$'\n,'
 
 # Options on what media to process.
 compressImages=true
-compressVideos=false # This doesn't work as intended. Modification date does not work.
+compressVideos=true # This doesn't work as intended. Modification date does not work.
 
 # If zero byte files are to be deleted. Disabling will cause
 # visual issues but harmless. Disable if you have zero byte files that
@@ -58,13 +58,13 @@ imgLossyArgs="-define webp:lossless=false"
 preInputFfmpeg=""
 
 ## Video
-videoCodec="libx265"
-videoQuality="28"  # Uses -q:v if value is numbers
+videoCodec="libsvtav1"
+videoQuality="38"  # Uses -q:v if value is numbers
       # Uses -b:v if value has letters (e.g. 100k,5M)
 
 ## Video Filters (Optional)
 vFil=""
-vParams="-x265-params log-level=error"
+vParams="-preset 8 -svtav1-params input-depth=10:keyint=10s"
 
 ## Audio
 audioCodec="libopus"
